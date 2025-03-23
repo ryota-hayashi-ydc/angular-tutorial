@@ -15,7 +15,7 @@ export class HousingService {
   /*Idをキーに検索し、合致したHousingLocationを返す*/
   getHousingLocationById(id: number): HousingLocation | undefined{
     return this.housingLocationList.find(housingLocation =>{
-      housingLocation.id === id;
+      return housingLocation.id === id;
     });
   }
   

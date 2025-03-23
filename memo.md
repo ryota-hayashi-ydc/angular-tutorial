@@ -13,13 +13,15 @@ package.jsonのengineプロパティには、各Angularバージョンに必要�
 ```cmd
 node --version
 ```
-**`package.json`:**
+**package.json:**
 ```json
   "engines": {
     "node": "^18.19.1 || ^20.11.1 || >=22.0.0"
   }
 ```
 [Node.jsのインストール](https://nodejs.org/ja/download)
+
+[AngularとNode.jsバージョン比較](https://app.unpkg.com/@angular/core@15.1.5/files/package.json)
 
 ## [2. Homeコンポーネントの作成](https://angular.jp/tutorials/first-app/02-HomeComponent)
 
@@ -203,7 +205,7 @@ import { RouterModule } from '@angular/router';
 -  <app-home></app-home>
 </section>
 ```
-**app.component.ts** へ **RouterModule** をインポートしたことにより、Angularのルーティング機能である `routerLink` や `router-outlet` を使用することが可能になる。
+**app.component.ts** へ **RouterModule** をインポートしたことにより、Angularのルーティング機能である `<a [routerLink]>` ディレクティブや `<router-outlet>` タグを使用することが可能になる。
 ### 2. ルーティングを追加する
 **routes.ts:**
 ```typescript
@@ -222,6 +224,64 @@ const routeConfig: Routes = [
 
 export default routeConfig;
 ```
+
+## [11. 詳細ページの作成](https://angular.jp/tutorials/first-app/11-details-page)
+### 1. 詳細ページへのルーティングボタン追加
+前章で追記したルーティング定義のうち、`details/:id` へのルーティングは動的なナビゲーションを提供する。
+
+**routes.ts:**
+```typescript
+    {
+        path: 'details/:id',// HousingLocationクラスの`id`プロパティを識別
+        component: DetailsComponent,
+        title: 'HomeDetails'
+    }
+```
+詳細ページへのダイナミックルーティング機能を追加する。
+
+**housinglocation.component.html:**
+```HTML
+    <a [routerLink]="['/details',housingLocation.id]">Learn More</a>
+```
+属性ディレクティブ `routerLink` には2つのエントリを持つ配列がバインドされた。1つ目はスタティックなURL、2つ目はダイナミックなURLである。
+
+### 2. 詳細ページのロジック
+**details.component.ts:**
+```typescript
+export class DetailsComponent {
+  route: ActivatedRoute = inject(ActivatedRoute);
+  housingService: HousingService = inject(HousingService);
+  housingLocation: HousingLocation | undefined;
+
+  constructor(){
+    const housingLocationId: number = +this.route.snapshot.params['id'];//明示的に数値型へキャストする必要がある。
+    this.housingLocation = this.housingService.getHousingLocationById(housingLocationId);
+  }
+}
+```
+**details.component.html:**
+```HTML
+<article>
+    <img
+        class="listing-photo"
+        [src]="housingLocation?.photo"
+        alt="Exterior photo of {{housingLocation?.name}}"
+    >
+    <section class="listing-description">
+        <h2 class="listing-heading">{{housingLocation?.name}}</h2>
+        <p class="listing-location">{{housingLocation?.city}}, {{housingLocation?.state}}</p>
+    </section>
+    <section class="listing-features">
+        <h2 class="section-heading">About this housing location</h2>
+        <ul>
+            <li>Utils available: {{housingLocation?.availableUnits}}</li>
+            <li>Does this location have wi-fi: {{housingLocation?.hasWifi}}</li>
+            <li>Does this location have laundry: {{housingLocation?.hasLaundry}}</li>
+        </ul>
+    </section>
+</article>
+````
+
 
 ------
 # 99. Tips
@@ -348,6 +408,58 @@ export class AppRoutingModule { }
 ### `<router-outlet>` と `<app-hogehoge>`
 #### `<router-outlet>` は、Angularルーティングシステムによって表示されるコンポーネントが動的に切り替わる。
 #### `<app-hogehoge>` は、Angularのカスタムコンポーネントを示すタグ。
+
+### `CommonModule`
+#### `CommonModule` とは？
+`*ngFor` 、`*ngIf` 、`async` パイプなどの基本的なディレクティブを定義するファイル。これらのディレクティブを使用するコンポーネントでは、`@Component` デコレータの`import` 配列に `CommonModule` をインポートする必要がある。
+
+### シングルトンインスタンスやコンポーネントのメタ情報を取得する方法
+ここでは、シングルトンインスタンス（サービスなど）やコンポーネントのメタ情報（パスなど）を取得する方法を示す。
+#### `@angular/core/inject` 関数
+```typescript
+import { inject } from '@angular/core';
+import { LoggerService } from `./logger.service`;
+~~~
+export class HogeComponent{
+  private logger = inject(Loggerservice); /*直接サービスを注入*/
+}
+```
+スタンドアローンコンポーネントに限り、コンストラクタを使わずにDIが可能。これにより、コンストラクタ関数外のスコープでDIコンテナに依存可能。
+#### ファクトリ関数
+```typescript
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Injectable({
+  providedIn: 'root',// プロジェクト全体へ provide
+  useFactory: () => new ApiService(inject(HttpClient)), // `inject` で `HttpClient` を取得
+})
+export class ApiService {
+  constructor(private http: HttpClient) {}
+
+  fetchData() {
+    return this.http.get('/api/data');
+  }
+}
+```
+プロバイダのファクトリ関数内で依存性を解決できる。
+### コンストラクタ
+```typescript
+import { Component } from '@angular/core';
+import { LoggerService } from './logger.service';
+
+@Component({
+  selector: 'app-example',
+  template: './example.component.html',
+  styleUrls: ['./example.component.css'],
+})
+export class ExampleComponent {
+  constructor(private logger: LoggerService) {
+    this.logger.log('ExampleComponent initialized!');
+  }
+}
+```
+コンストラクタを使ったDIはコンベンショナルだが、コンストラクタ関数スコープでしかサービスを使用できないのが難点。
 
 ## HTML
 ### ディレクティブとは？
