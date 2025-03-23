@@ -281,6 +281,126 @@ export class DetailsComponent {
     </section>
 </article>
 ````
+## [12. フォームの利用](https://angular.jp/tutorials/first-app/12-forms)
+### 1. ロジックへのフォーム機能の追加
+**details.component.ts:**
+```typescript
+import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
+~~~
+  imports: [CommonModule, ReactiveFormsModule], /*フォーム機能を実装したモジュールのインポート*/
+~~~
+export class DetailsComponent {
+  ~~~
+  applyForm = new FormGroup({
+    firstName: new FormControl(''),
+    lastName: new FormControl(''),
+    email: new FormControl(''),
+  });
+
+  submitApplication() {
+    this.housingService.submitApplication(
+      this.applyForm.value.firstName ?? '',
+      this.applyForm.value.lastName ?? '',
+      this.applyForm.value.email ?? '',
+    );
+  }
+}
+```
+`FormGroup` と `FormControl` がフォーム機能を実現するデータ型である。`FormControl` は `FormGroup` の基本要素である。
+> `FormGroup` はAngularのリアクティブフォームで使用されるフォーム管理クラス。複数の `FormControl` （個々の入力要素）をグループ化して管理する。上記使用例のほかにも以下のような用法がある。
+> ```typescript
+> console.log(this.applyForm.get('firstName')?.value); //プロパティ名を指定して値を取得
+> this.applyForm.patchvalue(  //FormGroupの値を更新
+>    firstName:  'Hoge',
+>    lastName:   'Fuga',
+>    email:      'hogefuga@example.com'
+>);
+>```
+### 2. テンプレートへのフォーム機能の追加
+**details.component.html:**
+```HTML
+    <section class="listing-apply">
+        <h2 class="section-heading">Apply now to live here</h2>
+        <form [formGroup]="applyForm" (submit)="submitApplication()">
+            <label for="first-name">First Name</label>
+            <input type="text" id="first-name" formControlName="firstName" />
+            <label for="last-name">Last Name</label>
+            <input type="text" id="last-name" formControlName="lastName" />
+            <label for="email">Email</label>
+            <input type="text" id="email" formControlName="email" />
+            <button type="submit" class="primary">Apply now</button>
+        </form>"
+    </section>
+```
+`form`:ユーザが入力するデータを送信するための要素である。`button type="submit"` と `ngSubmit` 、または `submit` ディレクティブが連動してフォーム送信時に何かしらのロジック（関数）を実行できる。
+|項目|`ngSubmit`|`sumit`|
+|-|-|-|
+|何者？|Angularのテンプレートディレクティブ|HTMLの標準フォームディレクティブ|
+|機能|フォーム送信時にTypeScript関数を呼び出す|フォームデータをサーバーに送信|
+|ページリロード|しない|する（`event.preventDefault()`で防ぐ）|
+
+`form` タグの `formGroup` ディレクティブを使い、`FormGroup` 変数をプロパティバインド。
+## [13. 検索機能](https://angular.jp/tutorials/first-app/13-search)
+```HTML
+<section>
+    <form>
+        <input type="text" placeholder="Filter by city name" #filter />
+        <button type="button" class="primary" (click)="filterLocation(filter.value)">Search</button>
+    </form>
+</section>
+```
+`input` タグの `#filter` とは**テンプレートリファレンス変数（ローカル参照変数）** であり、`button` タグから参照できる。
+
+## [HTTP通信](https://angular.jp/tutorials/first-app/14-http)
+### 1. JSON Serverのインストール
+```cmd
+npm install -g json-server
+```
+さらに、Angularプロジェクトルートディレクトリへ **db.json** ファイルを作成する。
+```cmd
+type nul > db.json
+```
+**houseing.service.ts** へ定義していたHousingLocationListを**db.json**へJSON形式で記述する。続いて、以下のコマンドを実行してHousingLocationListを返却する疑似サーバーを起動する。
+```cmd
+json-server --watch db.json
+```
+上記の手順より、`localhost:3000/locations` へアクセスすると**db.json**へ定義したリストが返却される。
+### 2. JSON Serverからデータを取得する
+**housing.service.ts:**
+```typescript
+readonly apiUrl   =   'http://localhost:3000/locations';
+
+  /*HousingLocationリストをすべて返す*/
+  async getAllHousingLocationList(): Promise<HousingLocation[]>{
+    const locations = await fetch(this.apiUrl);
+    return (await locations.json()) ?? [];
+  }
+
+  /*Idをキーに検索し、合致したHousingLocationを返す*/
+  async getHousingLocationById(id: number): Promise<HousingLocation | undefined>{
+    const location = await fetch(`${this.apiUrl}/${id}`);
+    return (await location.json()) ?? {}
+  }
+```
+**home.component.ts:**
+```typescript
+  /*housing.service.tsをコンストラクタベースでDI*/
+  constructor(housingService: HousingService){
+    housingService.getAllHousingLocationList().then((housingLocationList: HousingLocation[]) => {
+      this.housingLocationList = housingLocationList;
+      this.filteredLocationList = housingLocationList;
+    });
+  }
+```
+**details.component.ts:**
+```typescript
+  constructor(){
+    const housingLocationId: number = +this.route.snapshot.params['id'];
+    this.housingService.getHousingLocationById(housingLocationId).then((housingLocations: HousingLocation[]) => {
+      this.housingLocation = housingLocations[0];
+    });
+  }
+```
 
 
 ------
@@ -461,6 +581,15 @@ export class ExampleComponent {
 ```
 コンストラクタを使ったDIはコンベンショナルだが、コンストラクタ関数スコープでしかサービスを使用できないのが難点。
 
+### Nullish Coalescing Operator(`??`)
+`??` は、 `null` または `undefined` の場合にのみデフォルト値を適用する演算子である。
+
+**例)**
+```typescript
+const result = this.value ?? 'defaultstr';// value がnullまたはundefinedならデフォルト値`defaultstr`
+```
+
+
 ## HTML
 ### ディレクティブとは？
 ディレクティブとは、AngularがHTMLの構造や動作を拡張するための仕組み。3種類のディレクティブがある。
@@ -473,7 +602,7 @@ export class ExampleComponent {
 
 コンポーネント `@Component` もディレクティブの１種であり、`selector: 'app-home'`というカスタムHTMLタグを定義してHTMLに`<app-home></app-home>`に埋め込むことができる。
 
-### imgタグ
+### `img` タグ
 ```HTML
 <img
     [src]="https://hogehoge.com/hogehoge.jpg"
@@ -482,6 +611,21 @@ export class ExampleComponent {
 ```
 - src: 画像をフェッチするパス
 - alt: 画像を取得できない場合に表示する
+### `article` タグと `section` タグ
+|項目 |`<article>`|`<section>`|
+|-|-|-|
+|意味|独立したコンテンツ|関連する内容のグループ化|
+|使用例|ブログ記事・投稿・レビュー|章・トピックの集まり・Webページの構造化|
+
+### `label` と `input`（いまさら聞けない）
+```HTML
+    <label for="first-name">First Name</label>
+    <input type="text" id="first-name" formControlName="firstName" />
+    <button type="submit" class="primary">Apply now</button>
+```
+`label`: フォームの入力フィールドに対して説明をつける。`for` 属性を使うと、対応する `id` をもつ `input` にラベルクリック時にフォーカスする。
+`input`: ユーザが情報を入力するフィールド。`type` 属性で入力の種類（テキスト、パスワードなど）を指定できる。また、`formControlName` 属性を使うと、対応する `FormControl` を持つ `FormGroup` と紐づけ可能。
+
 ## CSS
 ### CSS基本記法
 Angularプロジェクトのルートディレクトリに配置される、**styles.css** は、Angularプロジェクト全体に適用されるグローバルスタイルを記述したもの。

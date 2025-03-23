@@ -14,9 +14,24 @@ import { RouterModule } from '@angular/router';
 })
 export class HomeComponent {
 
-  /*housing.service.tsをDIする*/
+  /*housing.service.tsをコンストラクタベースでDI*/
   constructor(housingService: HousingService){
-    this.housingLocationList = housingService.getAllHousingLocationList();
+    housingService.getAllHousingLocationList().then((housingLocationList: HousingLocation[]) => {
+      this.housingLocationList = housingLocationList;
+      this.filteredLocationList = housingLocationList;
+    });
   }
+
   housingLocationList: HousingLocation[] = [];
+  filteredLocationList: HousingLocation[] = [];
+
+  filterLocation(text: string): void{
+    if (!text) {
+      this.filteredLocationList = this.housingLocationList;
+      return;
+    }
+    this.filteredLocationList = this.housingLocationList.filter(housingLocation =>{
+      return housingLocation?.city.toLowerCase().includes(text.toLowerCase())// 都市名に検索語が含まれているもの
+    });
+  }
 }
