@@ -329,7 +329,7 @@ export class DetailsComponent {
             <label for="email">Email</label>
             <input type="text" id="email" formControlName="email" />
             <button type="submit" class="primary">Apply now</button>
-        </form>"
+        </form>
     </section>
 ```
 `form`:ユーザが入力するデータを送信するための要素である。`button type="submit"` と `ngSubmit` 、または `submit` ディレクティブが連動してフォーム送信時に何かしらのロジック（関数）を実行できる。
@@ -351,7 +351,7 @@ export class DetailsComponent {
 ```
 `input` タグの `#filter` とは**テンプレートリファレンス変数（ローカル参照変数）** であり、`button` タグから参照できる。
 
-## [HTTP通信](https://angular.jp/tutorials/first-app/14-http)
+## [14. HTTP通信](https://angular.jp/tutorials/first-app/14-http)
 ### 1. JSON Serverのインストール
 ```cmd
 npm install -g json-server
@@ -382,6 +382,12 @@ readonly apiUrl   =   'http://localhost:3000/locations';
     return (await location.json()) ?? {}
   }
 ```
+`async`: メソッドを非同期関数として定義する。関数の戻り値が暗黙的に `Promise` 型になる。また、`await` キーワードを使用でき、`Promise` が解決されるまで関数の実行が一時停止する。
+
+`fetch`: 指定されたURLへリソースをリクエストするビルトイン関数。Web標準のJavaScript APIで定義され、ブラウザ環境やNode.js環境で利用できる。HTTPリクエストを行い、`Promise` を返す。
+>ビルトイン関数：プログラミング言語が標準で提供する機能。言語のランタイム環境に組み込まれており、特定のライブラリやモジュールをインポートする必要がない。
+
+`await`: `fetch` が完了するまで待機する。`fetch` 関数のが完了すると、 `Promise` が `Response` へ解決される。
 **home.component.ts:**
 ```typescript
   /*housing.service.tsをコンストラクタベースでDI*/
@@ -401,7 +407,7 @@ readonly apiUrl   =   'http://localhost:3000/locations';
     });
   }
 ```
-
+`then`: `Promise` が解決されたときに実行する処理をコールバック形式で定義する。
 
 ------
 # 99. Tips
@@ -466,7 +472,7 @@ bootstrapApplication(AppComponent, {
   providers: [provideProtractorTestingSupport(), provideRouter(routeConfig)],
 }).catch((err) => console.error(err));
 ```
-** routes.ts **
+**routes.ts:**
 ```typescript
 const routeConfig: Routes = [
     {
