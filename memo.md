@@ -409,8 +409,44 @@ readonly apiUrl   =   'http://localhost:3000/locations';
 ```
 `then`: `Promise` が解決されたときに実行する処理をコールバック形式で定義する。
 
+# Training
+## [コンポーネント](https://angular.jp/guide/components)
+全てのコンポーネントは次のものが必要。
+- TypeScript: ロジックの定義
+- HTML: DOMにレンダリングされる内容を制御
+- CSS: HTMLでコンポーネントがどのように使用されるかを定義する
+
+Anuglarでは、`@Component` デコレータによってこれらの情報を定義する。`@Component` デコレータへ渡すオブジェクトは、コンポーネントの**メタデータ**といい、`selector` や `template` や `styleUrl` などがある。
+### インポート
+`@Component` デコレータの `imports` プロパティ配列を使って、コンポーネント外のコンポーネントやディレクティブ、パイプを使用することができる。
+>バージョンアップ後のAngularでは、コンポーネントはデフォルトでスタンドアローンであるため、コンポーネント間で直接インポートできる。旧バージョンでは、モジュール構成を採用しており、コンポーネントはスタンドアローンではないので、コンポーネント間で直接インポートすることはできず、`app.module.ts` などのモジュール定義ファイルで`@NgModule`の中でインポートする必要がある。
+
+## [テンプレート](https://angular.jp/guide/templates)
+
+### [概要](https://angular.jp/guide/templates)
+テンプレートとは、各コンポーネントがWebページへレンダリングするDOMを定義するもの。通常、***component.ts** の `template` プロパティか ***.component.html** にある。
+### [動的なテキスト、プロパティ、属性のバインディング](https://angular.jp/guide/templates/binding)
+**バインディング:** コンポーネントのもつデータとテンプレートを連動させる。この接続により、コンポーネントデータの変更がレンダリングされるテンプレートへ自動的に反映させる。
+
+#### ネイティブ要素のプロパティ
+全てのHTML要素（タグ）には、対応するDOM表現がある。たとえば、`<button>` HTML要素はDOM内の `HTMLButtonElement` インスタンスに対応する。Angularでは、プロパティバインドの仕組み使い、DOMのプロパティとコンポーネントデータ（変数）をバインドできる。
+```html
+<button [disabled]="isFormValid">Save</button>
+```
+#### コンポーネントとディレクティブのプロパティ
+要素がAngularコンポーネントのセレクタである場合、プロパティバインドの仕組みを使い、コンポーネント間のデータの受け渡しを可能にする。
+```html
+<app-hoge [hogeValue]="fugaValue" />
+```
+上記例では、**hoge.component.ts** の hogeValue 変数と **fuga.component.ts** の fugaValue をバインドする。
+
+## [HTTPクライアント](https://angular.jp/guide/http)
+### [概要](https://angular.jp/guide/http)
+Angularアプリケーションは、HTTPプロトコル通信用のクライアントサービス `HttpClient` を `@angular/common/http` から提供している。
+### [HttpClientの設定](https://angular.jp/guide/http/setup)
+
 ------
-# 99. Tips
+# Tips
 ## TypeScript
 ### テンプレートリテラル
 テンプレートリテラル：シングルクォートやダブルクォートではない引用符号「``」を使って文字列を記述する方法。これにより、変数を埋め込むことが可能。可読性が向上する。
@@ -630,7 +666,21 @@ const result = this.value ?? 'defaultstr';// value がnullまたはundefinedな�
     <button type="submit" class="primary">Apply now</button>
 ```
 `label`: フォームの入力フィールドに対して説明をつける。`for` 属性を使うと、対応する `id` をもつ `input` にラベルクリック時にフォーカスする。
+
 `input`: ユーザが情報を入力するフィールド。`type` 属性で入力の種類（テキスト、パスワードなど）を指定できる。また、`formControlName` 属性を使うと、対応する `FormControl` を持つ `FormGroup` と紐づけ可能。
+
+### DOM（Dociment Object Model）
+**DOM**: Webページの構造化された表現を提供するプログラミングインタフェース。HTMLやXML文書をプログラムから操作できるようにする仕組み。以下のノードタイプがある。
+- 要素ノード: HTMLタグ。例）`<html>`  `<body>` 
+- テキストノード: 要素内のテキスト。例）`"Hello World"`
+- 属性ノード: 要素の属性。例）`class="example"`
+- ドキュメントノード: DOMツリー全体を表すノード。
+
+TypeScriptからDOMを操作することも可能。
+```typescript
+const heading = document.getElementById('myHeading');
+const paragraph = document.querySelector('p');
+```
 
 ## CSS
 ### CSS基本記法
