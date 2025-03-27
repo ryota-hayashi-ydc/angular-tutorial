@@ -631,6 +631,86 @@ export class ExampleComponent {
 const result = this.value ?? 'defaultstr';// value がnullまたはundefinedならデフォルト値`defaultstr`
 ```
 
+### `forkJoin` 関数
+RxJS（Reactive Extensions for JavaScript）の一部の関数であり、ビルトイン関数ではない。RxJSとは、リアクティブプログラミングをサポートするためのライブラリで、非同期処理やイベント駆動型プログラム機能を提供する。
+`forkJoin` とは、複数のObservableがすべて完了するまで待ち、完了時に単一のObservableとして返す。つまり、非同期処理の並列実行と同時返却機能である。
+```cmd
+npm install rxjs
+```
+```typescript
+import { forkJoin, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+
+const observable1 = of('Hello').pipe(delay(1000));
+const observable2 = of('World').pipe(delay(2000));
+const observable3 = of('!').pipe(delay(3000));
+
+forkJoin([observable1, observable2, observable3]).subscribe(result => {
+  console.log(result); // ['Hello', 'World', '!']
+});
+```
+### `of` 関数
+RxJS関数の一部の関数であり、ビルトイン関数ではない。任意の値を受け取り、それらを順番に発行するObservableを返す。
+```typescript
+import { of } from 'rxjs';
+
+const observable$ = of(1,2,3,4,5);
+
+observable$.subscripbe(value => console.log(value));// 1,2,3,4,5
+```
+`observable$` のようにObservable型の変数名の末尾には '$' を付けるのが慣習。これにより可読性が向上する。
+
+### `pipe` 関数
+RxJSの一部の関数であり、ビルトイン関数ではない。`pipe` 関数とは、Observableオブジェクトの操作をチェーンするためのメソッドで、**複数の演算子を順番に適用できる**。
+```typescript
+import { HttpClient } from '@angular/common/http';
+import { map, filter } from 'rxjs/operators';
+
+constructor(private http: HttpClient){}
+
+getData(){
+  this.http.get<any[]>('https://api.example.com/data').pipe(
+    filter(data => data.length > 0),
+    map(data => data.map(item => item.name))
+  )
+  .subscribe({
+    next: (names) => {
+      console.log(`name:${names}`);
+    },
+    error: (error) =>{
+      console.error(error);
+    }
+  }
+  });
+}
+```
+### `subscribe` 関数
+`subscribe` 関数はObservable型を受け取るのに使用される。Observableのデータストリームに対してリスナー（コールバック）を設定し、データが発行されるたびにそのリスナーが呼び出される。３つのコールバック関数を引数として受け取る。
+1. `next` ハンドラ: Observableがデータを発行するたびに呼ばれる。発行されたデータが渡される。
+2. `error` ハンドラ: Observableがエラーを発行したときに呼び出される。エラー情報が渡される。
+3. `complete` ハンドラ: Observableが完了したときに呼び出される。データは渡されない。
+```typescript
+constructor(private http: HttpClient){}
+data: any;
+ngOnInIt(){
+  this.http.get('https://example.com/data')
+    .subscribe(
+      next: (response: any) => {  // ちなみに`next: ` は省略可能
+        console.log(response);
+        this.data = response;
+      },
+      error: (error: error) => {
+        console.error(error);
+      },
+      complete: () =>{
+        console.log('Request Completed');
+      }
+    )
+}
+```
+
+### `Promise` と `Observable` 
+
 
 ## HTML
 ### ディレクティブとは？
