@@ -666,6 +666,203 @@ export class ExampleComponent {
 const result = this.value ?? 'defaultstr';// value がnullまたはundefinedならデフォルト値`defaultstr`
 ```
 
+### `forkJoin` 関数
+RxJS（Reactive Extensions for JavaScript）の一部の関数であり、ビルトイン関数ではない。RxJSとは、リアクティブプログラミングをサポートするためのライブラリで、非同期処理やイベント駆動型プログラム機能を提供する。
+`forkJoin` とは、複数のObservableがすべて完了するまで待ち、完了時に単一のObservableとして返す。つまり、非同期処理の並列実行と同時返却機能である。
+```cmd
+npm install rxjs
+```
+```typescript
+import { forkJoin, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+
+const observable1 = of('Hello').pipe(delay(1000));
+const observable2 = of('World').pipe(delay(2000));
+const observable3 = of('!').pipe(delay(3000));
+
+forkJoin([observable1, observable2, observable3]).subscribe(result => {
+  console.log(result); // ['Hello', 'World', '!']
+});
+```
+### `of` 関数
+RxJS関数の一部の関数であり、ビルトイン関数ではない。任意の値を受け取り、それらを順番に発行するObservableを返す。
+```typescript
+import { of } from 'rxjs';
+
+const observable$ = of(1,2,3,4,5);
+
+observable$.subscripbe(value => console.log(value));// 1,2,3,4,5
+```
+`observable$` のようにObservable型の変数名の末尾には '$' を付けるのが慣習。これにより可読性が向上する。
+
+### `pipe` 関数
+RxJSの一部の関数であり、ビルトイン関数ではない。`pipe` 関数とは、Observableオブジェクトの操作をチェーンするためのメソッドで、**複数の演算子を順番に適用できる**。
+```typescript
+import { HttpClient } from '@angular/common/http';
+import { map, filter } from 'rxjs/operators';
+
+constructor(private http: HttpClient){}
+
+getData(){
+  this.http.get<any[]>('https://api.example.com/data').pipe(
+    filter(data => data.length > 0),
+    map(data => data.map(item => item.name))
+  )
+  .subscribe({
+    next: (names) => {
+      console.log(`name:${names}`);
+    },
+    error: (error) =>{
+      console.error(error);
+    }
+  }
+  });
+}
+```
+### `subscribe` 関数
+`subscribe` 関数はObservable型を受け取るのに使用される。Observableのデータストリームに対してリスナー（コールバック）を設定し、データが発行されるたびにそのリスナーが呼び出される。３つのコールバック関数を引数として受け取る。
+1. `next` ハンドラ: Observableがデータを発行するたびに呼ばれる。発行されたデータが渡される。
+2. `error` ハンドラ: Observableがエラーを発行したときに呼び出される。エラー情報が渡される。
+3. `complete` ハンドラ: Observableが完了したときに呼び出される。データは渡されない。
+```typescript
+constructor(private http: HttpClient){}
+data: any;
+ngOnInIt(){
+  this.http.get('https://example.com/data')
+    .subscribe(
+      next: (response: any) => {  // ちなみに next: は省略可能
+        console.log(response);
+        this.data = response;
+      },
+      error: (error: error) => {
+        console.error(error);
+      },
+      complete: () =>{
+        console.log('Request Completed');
+      }
+    )
+}
+```
+
+### [`Promise` と `Observable` ](https://blogs.jp.infragistics.com/entry/angular-observable-vs-angular-promise)
+#### Angular Promiseとは？
+Angular Promiseは、コールバックを使用する非同期関数の実行を提供する。コントローラ（またはディレクティブ）は、最大3つのコールバック（成功/エラー/通知）を登録することができる。次の４つの状態がある。
+1. 成功： アクションが実行された状態。
+2. 失敗： アクションが失敗した状態。
+3. 待機： アクションが実行中の状態。
+4. 不変： アクションが実行されるか拒否された状態。
+
+次のデメリットがある。
+- キャンセルできない。
+- リトライできない。
+- 非同期な値を一度だけ実行し、時間をかけて複数の値を実行することはできない。
+
+例）インプットされた数値が素数かどうかを検証する非同期な変数 `isPrime`
+```typescript
+  const isPrime = new Promise<string>((resolve, reject) => {
+    if(this.userInput <= 1){
+      reject('the enterd number is NOT prime!');
+    }
+    for(let i = 2; i < this.userInput; i++){
+      if(this.userInput % 1 == 0){
+        reject('the entered number is NOT prime!');
+      }
+      resolve('the enterd number is prime!!);
+    }
+  });
+```
+この非同期変数を次のように処理する。
+```typescript
+  isPrime
+    .then((value)=>{
+      console.log(value);
+    })
+    .catch((error)=>{
+      console.error(error);
+    })
+    .finally(()=>{
+      console.log('the promise is completed');
+    });
+```
+#### Angular Observableとは？
+開発者が関数を非同期・同期で実行できるように、より多くの機能を提供する。Observableは値のストリームを表し、複数のイベントを扱うことが可能で、それぞれに対して同じAPIを使用する。以下のようなデメリットがある。
+- ブラウザにネイティブサポートが提供されていない。
+- RxJSオペレータが新しいテーラードストリームの値を取得する必要がある。
+- デバッグがしにくい。
+
+例）Observableの作成
+```typescript
+import { Observable } from 'rxjs';
+~~~
+  public getData(){
+    const fakeData = new Observable((observer)=>{
+      setTimeout(()={
+        observer.next(this.generateData());
+        observer.complete();
+      }, 3000);
+    });
+    return fakeData;
+  }
+```
+この非同期関数を次のようにサブスクライブする。
+```typescript
+  const data: any[];
+  this.getData().subscribe(
+    (data: any[]) =>{
+      this.data = data;
+    }
+  );
+```
+#### PromiseとObservableの違い
+|項目|Promise|Observable|
+|-|-|-|
+|イベント種|非同期のデータリターンしか扱えない|同期・非同期両方扱える|
+|演算子|演算子の提供なし|`map`, `filter`, `reduce`, `retry`, `forEach` など様々な操作を提供する|
+|キャンセル|キャンセルできない|`unsubscribe` によってキャンセル可能。|
+つまり、Observableの方が高レベルのAPI！！しかし、その分コストが高く、またRxJSライブラリの実装が必要。
+
+### [`@Input` と `@Output`](https://qiita.com/masaks/items/677195b78379e0877e24)
+`@Input`は親コンポーネントから子コンポーネントへ値を引き渡し、`@Output` は子コンポーネントから親コンポーネントにイベントを引き渡す。
+#### `@Output` 
+**button.component.ts:**
+```typescript
+@Component({
+  selector: 'app-button',
+  templateUrl: `./button.component.html`,
+  styleUrls:[`./button.component.css`]
+})
+export class ButtonComponent{
+  @Input() buttonText: string = 'BUTTON';
+  @Output() addOops: EventEmitter<string> = new EventEmitter();
+
+  sendText(){
+    this.addOops.emit('Oops!');
+  }
+}
+```
+**button.component.html:**
+```html
+<button (click)="sendText()">{{ buttonText }}</button>
+```
+`@Output`デコレータの宣言時、`EventEmitter` インスタンスを生成する。`@Output` で宣言された`EventEmitter` 変数がemitした値を親コンポーネントで受け取ることが可能。
+
+**app.component.html:**
+```html
+<app-button (addOops)="logMessage($event)"></app-button>
+```
+**app.component.ts:**
+```typescript
+export class AppComponent{
+  logMessage(text: string){
+    console.log(`${text}, hello angular!`);
+  }
+}
+```
+親コンポーネントでは、子コンポーネント側で`@Output`宣言した変数をイベントとして使用する。まとめると、
+1. 子コンポーネントのイベントが発火する
+2. 子コンポーネントで`@Output`宣言した`EventEmitter.emit()`が実行される
+3. 親コンポーネントで`$event`で受け取る。
+
 
 ## HTML
 ### ディレクティブとは？
