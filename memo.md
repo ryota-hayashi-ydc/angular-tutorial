@@ -444,6 +444,41 @@ Anuglarでは、`@Component` デコレータによってこれらの情報を定
 ### [概要](https://angular.jp/guide/http)
 Angularアプリケーションは、HTTPプロトコル通信用のクライアントサービス `HttpClient` を `@angular/common/http` から提供している。
 ### [HttpClientの設定](https://angular.jp/guide/http/setup)
+`HttpClient` は `provideHttpClient` ヘルパー関数を使って提供される。普通、**app.config.ts** の `providers` にこれを含める。
+
+**app.config.ts:**
+```typescript
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(),
+  ],
+  // その他のアプリケーション設定
+}
+```
+これにより、アプリケーション内のサービスやコンポーネントへ `HttpClient` サービスをDIできる。
+
+**http.service.ts:**
+```typescript
+@Injectable({providedIn: 'root'})
+export class HttpService{
+  constructor(private http: HttpClient){
+    // `this.http` でHTTPリクエストを実行できる
+  }
+}
+```
+#### `HttpClient` の機能設定
+`provideHttpClient` 関数は、Httpクライアントの様々な機能の設定をオプションリストによって受け取る。
+- `withFetch`: デフォルトでは、`HttpClient` は `XMLHttpRequest` APIを使った実装を提供する。`withFetch`により、代わりに`fetch` APIを使った実装を提供する。`fetch` はより新しいAPIであり、Http通信状況イベントのリッスンなどの機能を追加提供してくれる。
+```typescript
+export class appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(
+      withFetch(),
+    ),
+  ]
+}
+```
+- 
 
 ------
 # Tips
