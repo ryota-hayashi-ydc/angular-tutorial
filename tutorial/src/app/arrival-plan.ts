@@ -1,5 +1,5 @@
-export interface ShipPlan {
-    c_shipplan_no: string,
+export interface ArrivalPlan {
+    c_arrivalplan_no: string,
     c_date: number,
     c_vaoucher_no: string,
     c_details_no: string,
