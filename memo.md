@@ -602,17 +602,17 @@ const routes: Routes = [];
 export class AppRoutingModule { }
 ```
 
-### `<router-outlet>` と `<app-hogehoge>`
-#### `<router-outlet>` は、Angularルーティングシステムによって表示されるコンポーネントが動的に切り替わる。
-#### `<app-hogehoge>` は、Angularのカスタムコンポーネントを示すタグ。
+## `<router-outlet>` と `<app-hogehoge>`
+### `<router-outlet>` は、Angularルーティングシステムによって表示されるコンポーネントが動的に切り替わる。
+### `<app-hogehoge>` は、Angularのカスタムコンポーネントを示すタグ。
 
-### `CommonModule`
-#### `CommonModule` とは？
+## `CommonModule`
+### `CommonModule` とは？
 `*ngFor` 、`*ngIf` 、`async` パイプなどの基本的なディレクティブを定義するファイル。これらのディレクティブを使用するコンポーネントでは、`@Component` デコレータの`import` 配列に `CommonModule` をインポートする必要がある。
 
-### シングルトンインスタンスやコンポーネントのメタ情報を取得する方法
+## シングルトンインスタンスやコンポーネントのメタ情報を取得する方法
 ここでは、シングルトンインスタンス（サービスなど）やコンポーネントのメタ情報（パスなど）を取得する方法を示す。
-#### `@angular/core/inject` 関数
+### `@angular/core/inject` 関数
 ```typescript
 import { inject } from '@angular/core';
 import { LoggerService } from `./logger.service`;
@@ -622,7 +622,7 @@ export class HogeComponent{
 }
 ```
 スタンドアローンコンポーネントに限り、コンストラクタを使わずにDIが可能。これにより、コンストラクタ関数外のスコープでDIコンテナに依存可能。
-#### ファクトリ関数
+### ファクトリ関数
 ```typescript
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -658,7 +658,7 @@ export class ExampleComponent {
 ```
 コンストラクタを使ったDIはコンベンショナルだが、コンストラクタ関数スコープでしかサービスを使用できないのが難点。
 
-### Nullish Coalescing Operator(`??`)
+## Nullish Coalescing Operator(`??`)
 `??` は、 `null` または `undefined` の場合にのみデフォルト値を適用する演算子である。
 
 **例)**
@@ -666,7 +666,7 @@ export class ExampleComponent {
 const result = this.value ?? 'defaultstr';// value がnullまたはundefinedならデフォルト値`defaultstr`
 ```
 
-### `forkJoin` 関数
+## `forkJoin` 関数
 RxJS（Reactive Extensions for JavaScript）の一部の関数であり、ビルトイン関数ではない。RxJSとは、リアクティブプログラミングをサポートするためのライブラリで、非同期処理やイベント駆動型プログラム機能を提供する。
 `forkJoin` とは、複数のObservableがすべて完了するまで待ち、完了時に単一のObservableとして返す。つまり、非同期処理の並列実行と同時返却機能である。
 ```cmd
@@ -684,7 +684,7 @@ forkJoin([observable1, observable2, observable3]).subscribe(result => {
   console.log(result); // ['Hello', 'World', '!']
 });
 ```
-### `of` 関数
+## `of` 関数
 RxJS関数の一部の関数であり、ビルトイン関数ではない。任意の値を受け取り、それらを順番に発行するObservableを返す。
 ```typescript
 import { of } from 'rxjs';
@@ -695,7 +695,7 @@ observable$.subscripbe(value => console.log(value));// 1,2,3,4,5
 ```
 `observable$` のようにObservable型の変数名の末尾には '$' を付けるのが慣習。これにより可読性が向上する。
 
-### `pipe` 関数
+## `pipe` 関数
 RxJSの一部の関数であり、ビルトイン関数ではない。`pipe` 関数とは、Observableオブジェクトの操作をチェーンするためのメソッドで、**複数の演算子を順番に適用できる**。
 ```typescript
 import { HttpClient } from '@angular/common/http';
@@ -719,7 +719,7 @@ getData(){
   });
 }
 ```
-### `subscribe` 関数
+## `subscribe` 関数
 `subscribe` 関数はObservable型を受け取るのに使用される。Observableのデータストリームに対してリスナー（コールバック）を設定し、データが発行されるたびにそのリスナーが呼び出される。３つのコールバック関数を引数として受け取る。
 1. `next` ハンドラ: Observableがデータを発行するたびに呼ばれる。発行されたデータが渡される。
 2. `error` ハンドラ: Observableがエラーを発行したときに呼び出される。エラー情報が渡される。
@@ -744,8 +744,8 @@ ngOnInIt(){
 }
 ```
 
-### [`Promise` と `Observable` ](https://blogs.jp.infragistics.com/entry/angular-observable-vs-angular-promise)
-#### Angular Promiseとは？
+## [`Promise` と `Observable` ](https://blogs.jp.infragistics.com/entry/angular-observable-vs-angular-promise)
+### Angular Promiseとは？
 Angular Promiseは、コールバックを使用する非同期関数の実行を提供する。コントローラ（またはディレクティブ）は、最大3つのコールバック（成功/エラー/通知）を登録することができる。次の４つの状態がある。
 1. 成功： アクションが実行された状態。
 2. 失敗： アクションが失敗した状態。
@@ -784,7 +784,7 @@ Angular Promiseは、コールバックを使用する非同期関数の実行�
       console.log('the promise is completed');
     });
 ```
-#### Angular Observableとは？
+### Angular Observableとは？
 開発者が関数を非同期・同期で実行できるように、より多くの機能を提供する。Observableは値のストリームを表し、複数のイベントを扱うことが可能で、それぞれに対して同じAPIを使用する。以下のようなデメリットがある。
 - ブラウザにネイティブサポートが提供されていない。
 - RxJSオペレータが新しいテーラードストリームの値を取得する必要がある。
@@ -813,7 +813,7 @@ import { Observable } from 'rxjs';
     }
   );
 ```
-#### PromiseとObservableの違い
+### PromiseとObservableの違い
 |項目|Promise|Observable|
 |-|-|-|
 |イベント種|非同期のデータリターンしか扱えない|同期・非同期両方扱える|
@@ -821,9 +821,9 @@ import { Observable } from 'rxjs';
 |キャンセル|キャンセルできない|`unsubscribe` によってキャンセル可能。|
 つまり、Observableの方が高レベルのAPI！！しかし、その分コストが高く、またRxJSライブラリの実装が必要。
 
-### [`@Input` と `@Output`](https://qiita.com/masaks/items/677195b78379e0877e24)
+## [`@Input` と `@Output`](https://qiita.com/masaks/items/677195b78379e0877e24)
 `@Input`は親コンポーネントから子コンポーネントへ値を引き渡し、`@Output` は子コンポーネントから親コンポーネントにイベントを引き渡す。
-#### `@Output` 
+### `@Output` 
 **button.component.ts:**
 ```typescript
 @Component({
@@ -863,7 +863,88 @@ export class AppComponent{
 2. 子コンポーネントで`@Output`宣言した`EventEmitter.emit()`が実行される
 3. 親コンポーネントで`$event`で受け取る。
 
+## [Angular Material](https://material.angular.io/guide/getting-started)
+### 1. AngularMaterialのインストール
+AngularMaterialのインストール
+```cmd
+ng add @angular/material
+```
+以下が実行される。
+- **package.json** に `@angular/material` 依存関係の追加
+- **index.html** にフォント追加
+### 2. AngularMaterialの使用
+ここでは、`MatSlideToggleModule` について紹介する。
 
+AngularMaterialアイコンを使用するコンポーネントへ、`MatSlideToggleModule` をインポートする。
+**hoge.component.ts:**
+```typescript
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+
+@Component({
+  imports:[
+    MatSlideToggleModule,
+    ],
+```
+**hoge.component.html:**
+```html
+<mat-slide-toggle>Toggle me!</mat-slide-toggle>
+```
+
+## `npm install` と `ng add`  
+||`npm install`|`ng add`|
+|-|-|-|
+|目的|指定したパッケージをプロジェクトへインストールする|Angularプロジェクトに特定のパッケージをインストールし、必要な設定や攻勢を自動で行う|
+|使い方|`npm install <パッケージ名>`|`ng add <パッケージ名`|
+|機能|**packge.json** へ依存関係を追加し、パッケージを **node_modules** ディレクトリへインストールする|同左|
+|汎用性|いかなるNode.jsプロジェクトでも使用可能|Angularプロジェクトに特化し、**angular.json** への設定も行ってくれる|
+
+## **Guard**
+### **Guard**とは？
+ルーティング機能へ認可処理を提供する。以下のコマンドで生成する。
+```cmd
+ng generate guard guard/auth
+```
+**auth.guard.ts:**
+```typescript
+import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from '../auth.service';
+import { inject } from '@angular/core';
+
+export const authGuard: CanActivateFn = (route, state) => {
+  const authService: AuthService = inject(AuthService);
+  const router: Router = inject(Router);
+
+  if(authService.authenticate()){
+    return true;
+  }else{
+    return router.parseUrl('');
+  }
+};
+```
+**routes.ts:**
+```typescript
+import { authGuard } from "./guard/auth.guard";
+
+const routeConfig: Routes = [
+    {
+        path: '',
+        component: HomeComponent,
+        title: 'HomePage'
+    },
+    {
+        path: 'details/:id',
+        component: DetailsComponent,
+        title: 'HomeDetails',
+        canActivate: [authGuard]
+    },
+    {
+        path: 'http',
+        component: HttpTrainingComponent,
+        title: 'HttpTraining',
+        canActivate: [authGuard]
+    }
+]
+```
 ## HTML
 ### ディレクティブとは？
 ディレクティブとは、AngularがHTMLの構造や動作を拡張するための仕組み。3種類のディレクティブがある。

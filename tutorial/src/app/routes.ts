@@ -3,6 +3,7 @@ import { HomeComponent } from "./home/home.component";
 import { DetailsComponent } from "./details/details.component";
 import { Component } from "@angular/core";
 import { HttpTrainingComponent } from "./http-training/http-training.component";
+import { authGuard } from "./guard/auth.guard";
 
 const routeConfig: Routes = [
     {
@@ -13,12 +14,14 @@ const routeConfig: Routes = [
     {
         path: 'details/:id',
         component: DetailsComponent,
-        title: 'HomeDetails'
+        title: 'HomeDetails',
+        canActivate: [authGuard]
     },
     {
         path: 'http',
         component: HttpTrainingComponent,
-        title: 'HttpTraining'
+        title: 'HttpTraining',
+        canActivate: [authGuard]
     }
 ]
 
