@@ -691,7 +691,7 @@ import { of } from 'rxjs';
 
 const observable$ = of(1,2,3,4,5);
 
-observable$.subscripbe(value => console.log(value));// 1,2,3,4,5
+observable$.subscribe(value => console.log(value));// 1,2,3,4,5
 ```
 `observable$` のようにObservable型の変数名の末尾には '$' を付けるのが慣習。これにより可読性が向上する。
 
@@ -921,6 +921,8 @@ export const authGuard: CanActivateFn = (route, state) => {
   }
 };
 ```
+関数型 `CanActivateFn` の **authGuard** を定義。認証成功時に `true` を返し、認証失敗時に `router.parseUrl('')` を呼び出して空のURLへリダイレクトする。
+
 **routes.ts:**
 ```typescript
 import { authGuard } from "./guard/auth.guard";
@@ -945,6 +947,156 @@ const routeConfig: Routes = [
     }
 ]
 ```
+
+## `Subscription`
+### [`Subscription` とは？](https://rxjs.dev/guide/subscription)
+> Subscription is an object that reperesents a disposable resource, usually the execution of an Observable. Subscription has one important method, unsubscribe, that takes no argument and just disposes the resource held by the subscription.
+
+つまり、`Subscription` とは、吐き可能なリソースを表し、`Observable` の実行を表すオブジェクトである。`unsubscribe` というメソッドを持ち、このメソッドは引数をとらず `Subscription` が持っているリソースの破棄を行うだけである。ちなみに `subscribe` メソッドも持っている。
+```typescript
+import { interval } from 'rxjs';
+
+const observable = interval(1000);
+const subscription = observable.subscribe(x => console.log(x));
+
+// Observableのサブスクライブを終了する
+subscription.unsubscribe();
+```
+`Observable.subscribe()` メソッドの戻り値の型が `Subscription` である。
+
+## `Subject`
+### [`Subject` とは？](https://rxjs.dev/guide/subject)
+> An RxJS Subject is a special type of Observable that allows values to be multicasted to many Observers. While plain Observables are unicast (each subscribed Observer owns an independet execution of the Observable), Subjects are multicast. 
+>> A Subject is like an Observable, but can multicast to many Observers/ Subjects are like EventEmitters: they can maintain a registry of many listeners.
+
+いわば、`Subject` とはマルチキャスト版 `Observable` 型であり、複数のサブスクライブで一つの `Observable` 型を共有することができる。`Subject` は親子関係にない複数のコンポーネント間でオブジェクトを共有することを可能にする。
+
+### [`Subject` の使い方](https://qiita.com/seanayuuto0826/items/6b2aa4ee463c0bdff8b2)
+登場人物：
+- コンポーネントA
+- コンポーネントB
+- コンポーネント間で共有するデータクラス
+- データの共有を提供するサービス
+**app.component.ts:**
+```html
+<app-input-page></app-input-page>
+<app-show-page></app-show-page>
+```
+**share-number.ts:**
+```typescript
+export class ShareNumber{
+  private _count: number;
+
+  constructor(){
+    this._count = 0;
+  }
+
+  // @getter: 呼び出し例) console.log(shareNumber.count);
+  get count(): number{
+    return this._count;
+  }
+
+  // @setter: 呼び出し例) shareNumber.count = 5
+  set count(addedNumber: number): number{
+    this._count = addedNumber;
+  }
+}
+```
+**detect-change.service.ts:**
+```typescript
+import { Injectable, OnDestroy } from '@angular/core';
+import { ShareNumber } from '../model/share-number.ts';
+import { Observable, Subject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DetectChangeService implements OnDestroy{
+  // 共有する数値データクラスのインスタンス
+  private shareNumber = new ShareNumber();
+
+  // 変更を通知する機能を提供するSubjectクラスのインスタンス
+  private changeDetector = new Subject<void>();
+
+  // 数値をインクリメントし、サブスクライバーへ変更を通知する
+  public addNumber(): void{
+    this.shareNumber.count += 1;
+    // サブスクライブ対象のデータの変更が発生した際、Subjectインスタンスのストリームが発生する（Observable.subscribe()メソッドの next のコールバックが実施される）。
+    this.changeDetector.next();
+  }
+
+  public getNumber(): number(){
+    return this.shareNumber.count;
+  }
+
+  // 変更通知機能を提供 Subjectインスタンスと同期している
+  public getDetector(): Observable<void>{
+    // SubjectオブジェクトをObservableとして外部へ公開する これにより、外部からSubjectオブジェクトの内部実装にアクセスできず、Observableのサブスクライブインタフェースだけが公開される
+    return this.changeDetector.asObservable();
+  }
+
+  // メモリリークを避けるため、サービスの消滅と同時にサブスクライブを終了する
+  ngOnDestroy(){
+    this.changeDetector.unsubscribe();
+  }
+}
+```
+**input-page.component.ts:**
+```typescript
+import { Component, OnInIt } from '@angular/core';
+import { DetectCahngeService } from 'src/app/service/detect-change.service.ts';
+
+@Component({
+  selector: 'app-input-page',
+  templateUrl: './input-page.component.html',
+  styleUrls: ['./input-page.component.css']
+})
+export class InputPageComponent{
+  constructor(private readOnly service: DetectChangeService){}
+
+  onClickButton(): void{
+    this.service.addNumber();
+  }
+}
+```
+**show-page.component.ts:**
+```typescript
+import { Component, OnDestroy, OnInIt } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { ShareNumber } from '../model/share-number';
+
+@Component({
+  selector: 'app-show-page',
+  templateUrl: './show-page.component.html',
+  styleUrls: ['./show-page.component.css']
+})
+export class ShowPageComponent implements OnInIt, OnDestroy{
+  var count!: number;
+
+  var subscription: Subscription = new Subscription();
+
+  constructor(private readonly service: DetectChangeService){}
+
+  ngOnInIt(): void{
+    this.updateNumber();
+
+    this.subscription.add(
+      this.service.getDetector().subscribe(()=>{
+        this.updateNumber();
+      })
+    );
+  }
+
+  onDestroy(): void{
+    this.subscription.unsubscribe();
+  }
+
+  private updateNumber(): void{
+    this.count = this.service.getNumber();
+  }
+}
+```
+
 ## HTML
 ### ディレクティブとは？
 ディレクティブとは、AngularがHTMLの構造や動作を拡張するための仕組み。3種類のディレクティブがある。
